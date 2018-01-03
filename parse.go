@@ -1,9 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"github.schq.secious.com/jason-miller/go-openapi-v3/generator"
 
@@ -31,8 +32,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	generateFiles(document)
-
 	w := generator.NewWalker(document)
 
 	err = w.Traverse()
@@ -41,12 +40,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	schemaModels := w.GetModels()
+	opModels := w.GetOperations()
 
-	for _, value := range schemaModels {
-		data, _ := json.Marshal(value)
-		fmt.Printf("%s\n", data)
-	}
+	spew.Dump(opModels)
 
 	os.Exit(0)
 }

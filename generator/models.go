@@ -1,28 +1,100 @@
 package generator
 
-type SchemaModel struct {
-	Name       string
+type Component struct {
+	componentName string
+}
+
+func NewComponent(componentName string) Component {
+	return Component{
+		componentName,
+	}
+}
+
+func (m *Component) IsComponent() bool {
+	return len(m.componentName) > 0
+}
+
+func (m *Component) GetComponentName() string {
+	return m.componentName
+}
+
+type SchemaModel interface {
+	GetType() string
+	IsPrimitive() bool
+	IsArray() bool
+	IsObject() bool
+}
+
+type CommonSchemaModel struct {
+	Component
+	Title    string
+	Type     string
+	Nullable bool
+}
+
+func (m *CommonSchemaModel) GetType() string {
+	return m.Type
+}
+
+func (m *CommonSchemaModel) IsPrimitive() bool {
+	return m.Type != "object" && m.Type != "array"
+}
+
+func (m *CommonSchemaModel) IsObject() bool {
+	return m.Type == "object"
+}
+
+func (m *CommonSchemaModel) IsArray() bool {
+	return m.Type == "array"
+}
+
+type StructSchemaModel struct {
+	CommonSchemaModel
+	Properties map[string]SchemaModel
 	Required   []string
-	Properties *map[string]interface{}
 }
 
-type Property struct {
-	Name string
-	Type string
+type ArraySchemaModel struct {
+	CommonSchemaModel
+	Items    SchemaModel
+	MinItems int64
+	MaxItems int64
 }
 
-type PrimitiveProperty struct {
-	Name   string
-	Type   string
-	Format string
+type PrimitiveSchemaModel struct {
+	CommonSchemaModel
+	Format    string
+	MinLength int64
+	MaxLength int64
 }
 
-type StructProperty struct {
-	Name string
-	Ref  *SchemaModel `json:"-"`
+type Operation struct {
+	Name       string
+	Requests   []Request
+	Method     string
+	Path       string
+	Responses  []Response
+	Parameters []Parameter
 }
 
-type ResponseModel struct {
-	Ref  string
-	Name string
+type Request struct {
+	Component
+	Accept string
+	Body   SchemaModel
+}
+
+type Parameter struct {
+	Component
+	Name     string
+	In       string
+	Required bool
+	Schema   SchemaModel
+}
+
+type Response struct {
+	Component
+	StatusCode  string
+	ContentType string
+	Body        SchemaModel
+	Headers     map[string]SchemaModel
 }

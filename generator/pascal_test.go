@@ -15,6 +15,7 @@ func TestToPascal(t *testing.T) {
 		[]string{"test-case", "TestCase"},
 		[]string{"test_case", "TestCase"},
 		[]string{"test case", "TestCase"},
+		[]string{"test-case+", "TestCase"},
 
 		// numbers
 		[]string{"test1case", "Test1Case"},
@@ -25,6 +26,9 @@ func TestToPascal(t *testing.T) {
 
 		// special characters
 		[]string{"хлеб", "Хлеб"},
+
+		// whatever
+		[]string{"application/vnd.logrhythm.case.list.v1+json", ""},
 	}
 
 	for _, c := range cases {
