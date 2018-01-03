@@ -1,4 +1,4 @@
-package generator
+package parser
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/googleapis/gnostic/OpenAPIv3"
+
+	"github.schq.secious.com/jason-miller/go-openapi-v3/utils"
 )
 
 // 1. walk components/schemas
@@ -136,7 +138,7 @@ func (o *Walker) buildOperationsFromPath(path *openapi_v3.NamedPathItem) ([]*Ope
 
 func (o *Walker) buildHandlersFromOp(op *openapi_v3.Operation, params handlerParams) (*Operation, error) {
 	operation := Operation{
-		Name:   ToPascalCase(op.OperationId),
+		Name:   utils.ToPascalCase(op.OperationId),
 		Method: params.method,
 		Path:   params.path,
 	}
@@ -279,7 +281,7 @@ func (o *Walker) resolveSchema(schema *openapi_v3.Schema, componentName string) 
 					structModel := (allOfModel).(*StructSchemaModel)
 					for k, v := range structModel.Properties {
 						// TODO: check overrides and warn?
-						schemaModel.Properties[k] = v
+						schemaModel.Properties[utils.ToPascalCase(k)] = v
 					}
 				}
 			}

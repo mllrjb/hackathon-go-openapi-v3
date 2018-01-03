@@ -1,0 +1,22 @@
+package generated
+
+import "net/http"
+
+var _ = http.MethodGet
+
+{{range .Handlers}}
+type {{.Name}} interface {
+    {{if .Body}}
+    Handle(params {{.Params}}, body {{.Body}}) Responder
+    {{else}}
+    Handle(params {{.Params}}) Responder
+    {{end}}
+}
+{{end}}
+
+{{range .Models}}
+type {{.Name}} struct {
+    {{range $k, $v := .Properties}}
+    {{$k}} {{$v}} {{end}}
+}
+{{end}}

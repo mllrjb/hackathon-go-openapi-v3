@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.schq.secious.com/jason-miller/go-openapi-v3/generator"
+
+	"github.schq.secious.com/jason-miller/go-openapi-v3/parser"
 
 	"github.com/googleapis/gnostic/OpenAPIv3"
 	"github.com/googleapis/gnostic/compiler"
@@ -32,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	w := generator.NewWalker(document)
+	w := parser.NewWalker(document)
 
 	err = w.Traverse()
 	if err != nil {
@@ -40,9 +40,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	opModels := w.GetOperations()
+	generator.GenerateFiles(w)
 
-	spew.Dump(opModels)
+	// opModels := w.GetOperations()
+
+	// spew.Dump(opModels)
 
 	os.Exit(0)
 }

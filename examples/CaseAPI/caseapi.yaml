@@ -79,7 +79,7 @@ paths:
           schema:
             type: string
             format: uuid
-      operationId: updateCase
+      operationId: patchCase
       requestBody:
         content:
           'application/vnd.logrhythm.case.v1.merge-patch+json':
