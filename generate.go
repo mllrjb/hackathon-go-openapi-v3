@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -52,8 +54,27 @@ func generateFiles(document *openapi_v3.Document) {
 	}
 
 	paths := document.GetPaths()
+	ctmpl := t.Lookup("controller.tmpl")
+	if ctmpl == nil {
+		fmt.Println("could not find controller template")
+		os.Exit(1)
+	}
 	if paths != nil {
-		t.ExecuteTemplate(controllerFile, "controller.tmpl", *paths)
+		var buf bytes.Buffer
+
+		err = ctmpl.Execute(&buf, *paths)
+		if err != nil {
+			fmt.Println("error processing controllers: %v\n", err)
+			os.Exit(1)
+		}
+
+		formattedBytes, err := format.Source(buf.Bytes())
+		if err != nil {
+			fmt.Println("error formattingcontrollers: %v\n", err)
+			os.Exit(1)
+		}
+
+		controllerFile.Write(formattedBytes)
 	}
 
 }
