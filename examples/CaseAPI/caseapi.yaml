@@ -49,12 +49,14 @@ paths:
         content:
           'application/vnd.logrhythm.case.v1+json':
             schema:
+              type: object
               required:
                 - name
               allOf:
                 - $ref: '#/components/schemas/CaseEditableFieldsV1'
           'application/vnd.logrhythm.case.v2+json':
             schema:
+              type: object
               required:
                 - name
                 - status
@@ -84,10 +86,12 @@ paths:
         content:
           'application/vnd.logrhythm.case.v1.merge-patch+json':
             schema:
+              type: object
               allOf:
                 - $ref: '#/components/schemas/CaseEditableFieldsV1'
           'application/vnd.logrhythm.case.v2.merge-patch+json':
             schema:
+              type: object
               allOf:
                 - $ref: '#/components/schemas/CaseEditableFieldsV2'
       responses:
@@ -118,28 +122,24 @@ paths:
         content:
           'application/vnd.logrhythm.case-evidence.list.v1+json':
             schema:
-              type: array
-              items:
-                type: object
-                oneOf:
-                  - $ref: '#/components/schemas/NoteEvidence'
-                  - $ref: '#/components/schemas/AlarmEvidence'
-                discriminator:
-                  propertyName: evidenceType
+              type: object
+              oneOf:
+                - $ref: '#/components/schemas/NoteEvidence'
+                - $ref: '#/components/schemas/AlarmEvidence'
+              discriminator:
+                propertyName: evidenceType
       responses:
         '201':
           description: The created evidence
           content:
             'application/vnd.logrhythm.case-evidence.list.v1+json':
               schema:
-                type: array
-                items:
-                  type: object
-                  oneOf:
-                    - $ref: '#/components/schemas/NoteEvidence'
-                    - $ref: '#/components/schemas/AlarmEvidence'
-                  discriminator:
-                    propertyName: evidenceType
+                type: object
+                oneOf:
+                  - $ref: '#/components/schemas/NoteEvidence'
+                  - $ref: '#/components/schemas/AlarmEvidence'
+                discriminator:
+                  propertyName: evidenceType
 
 components:
   schemas:
@@ -202,6 +202,7 @@ components:
         createdBy:
           $ref: '#/components/schemas/Person'
     NoteEvidence:
+      type: object
       allOf:
         - $ref: '#/components/schemas/Evidence'
         - type: object
@@ -211,6 +212,7 @@ components:
             note:
               type: string
     AlarmEvidence:
+      type: object
       allOf:
         - $ref: '#/components/schemas/Evidence'
         - type: object
