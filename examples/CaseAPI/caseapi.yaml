@@ -34,6 +34,73 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CaseV2'
+  '/cases/{id}':
+    put:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the Case to add evidence to.
+          schema:
+            type: string
+            format: uuid
+      operationId: updateCase
+      requestBody:
+        content:
+          'application/vnd.logrhythm.case.v1+json':
+            schema:
+              required:
+                - name
+              allOf:
+                - $ref: '#/components/schemas/CaseEditableFieldsV1'
+          'application/vnd.logrhythm.case.v2+json':
+            schema:
+              required:
+                - name
+                - status
+              allOf:
+                - $ref: '#/components/schemas/CaseEditableFieldsV2'
+      responses:
+        '200':
+          description: The updated case.
+          content:
+            'application/vnd.logrhythm.case.list.v1+json':
+              schema:
+                $ref: '#/components/schemas/CaseV1'
+            'application/vnd.logrhythm.case.list.v2+json':
+              schema:
+                $ref: '#/components/schemas/CaseV2'
+    patch:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the Case to add evidence to.
+          schema:
+            type: string
+            format: uuid
+      operationId: updateCase
+      requestBody:
+        content:
+          'application/vnd.logrhythm.case.v1.merge-patch+json':
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CaseEditableFieldsV1'
+          'application/vnd.logrhythm.case.v2.merge-patch+json':
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CaseEditableFieldsV2'
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdatedCaseAllVersions'
+          # description: The updated case.
+          # content:
+          #   'application/vnd.logrhythm.case.list.v1+json':
+          #     schema:
+          #       $ref: '#/components/schemas/CaseV1'
+          #   'application/vnd.logrhythm.case.list.v2+json':
+          #     schema:
+          #       $ref: '#/components/schemas/CaseV2'
   '/cases/{id}/evidence':
     post:
       operationId: createEvidence
@@ -76,34 +143,49 @@ paths:
 
 components:
   schemas:
+    CaseEditableFieldsV1:
+      type: object
+      properties:
+        name:
+          type: string
+    CaseEditableFieldsV2:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CaseEditableFieldsV1'
+        - type: object
+          properties:
+            status:
+              type: integer
+              format: int32
+              minimum: 1
+              maximum: 5
+    CaseDerivedFields:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        createdBy:
+          $ref: '#/components/schemas/Person'
+        lastUpdatedBy:
+          $ref: '#/components/schemas/Person'
     CaseV1:
       type: object
       required:
         - id
         - name
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/CaseDerivedFields'
+        - $ref: '#/components/schemas/CaseEditableFieldsV1'
     CaseV2:
       type: object
       required:
         - id
         - name
         - status
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        status:
-          type: integer
-          format: int32
-          minimum: 1
-          maximum: 5
+      allOf:
+        - $ref: '#/components/schemas/CaseDerivedFields'
+        - $ref: '#/components/schemas/CaseEditableFieldsV2'
     Evidence:
       type: object
       discriminator:
@@ -117,6 +199,8 @@ components:
           format: int32
         evidenceType:
           type: string
+        createdBy:
+          $ref: '#/components/schemas/Person'
     NoteEvidence:
       allOf:
         - $ref: '#/components/schemas/Evidence'
@@ -136,3 +220,24 @@ components:
             alarmId:
               type: integer
               format: int32
+    Person:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+  responses:
+    UpdatedCaseAllVersions:
+      description: The updated case.
+      content:
+        'application/vnd.logrhythm.case.list.v1+json':
+          schema:
+            $ref: '#/components/schemas/CaseV1'
+        'application/vnd.logrhythm.case.list.v2+json':
+          schema:
+            $ref: '#/components/schemas/CaseV2'

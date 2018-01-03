@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.schq.secious.com/jason-miller/go-openapi-v3/generator"
+
 	"github.com/googleapis/gnostic/OpenAPIv3"
 	"github.com/googleapis/gnostic/compiler"
 )
 
+const filepath = "examples/CaseAPI/caseapi.yaml"
+
 func main() {
-	filepath := "examples/CaseAPI/caseapi.yaml"
 	bytes, err := compiler.ReadBytesForFile(filepath)
 	if err != nil {
 		fmt.Printf("unable to read bytes from %s %s\n", filepath, err)
@@ -28,14 +31,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	generateFiles(document)
+	// generateFiles(document)
 
-	data, err := json.Marshal(document)
+	w := generator.NewWalker(document)
+
+	err = w.Traverse()
 	if err != nil {
-		fmt.Printf("unable to marshal document to JSON %s %s\n", filepath, err)
+		fmt.Printf("unable to traverse models %s\n", filepath, err)
 		os.Exit(1)
 	}
-	fmt.Printf("%s\n", data)
+
+	schemaModels := w.GetModels()
+
+	for _, value := range schemaModels {
+		data, _ := json.Marshal(value)
+		fmt.Printf("%s\n", data)
+	}
 
 	os.Exit(0)
 }
