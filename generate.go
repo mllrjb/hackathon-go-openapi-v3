@@ -39,9 +39,21 @@ func generateFiles(document *openapi_v3.Document) {
 		os.Exit(1)
 	}
 
+	err = os.MkdirAll("output", os.ModePerm)
+	if err != nil {
+		fmt.Printf("unable to create output dir: %v", err)
+		os.Exit(1)
+	}
+
+	controllerFile, err := os.Create("output/controllers.go")
+	if err != nil {
+		fmt.Printf("unable to create output/controllers.go: %v", err)
+		os.Exit(1)
+	}
+
 	paths := document.GetPaths()
 	if paths != nil {
-		t.ExecuteTemplate(os.Stdout, "controller.tmpl", *paths)
+		t.ExecuteTemplate(controllerFile, "controller.tmpl", *paths)
 	}
 
 }

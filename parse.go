@@ -31,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// generateFiles(document)
+	generateFiles(document)
 
 	w := generator.NewWalker(document)
 
