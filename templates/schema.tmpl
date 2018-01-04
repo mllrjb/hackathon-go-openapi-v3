@@ -1,0 +1,11 @@
+{{if .IsPrimitive -}}
+{{.ReceiverName}} {{.GoType}}
+{{- else if .IsObject -}}
+{{.GoType}} struct {
+  {{- range .Properties}}
+  {{template "schema.tmpl" .}}
+  {{- end -}}
+}
+{{- else if .IsSlice -}}
+{{.GoType}}
+{{- end}}

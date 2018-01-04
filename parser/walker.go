@@ -203,33 +203,38 @@ func (o *Walker) buildHandlersFromOp(op *openapi_v3.Operation, params handlerPar
 	if len(op.Responses.ResponseOrReference) > 0 {
 		for _, response := range op.Responses.ResponseOrReference {
 			if resp := response.Value.GetResponse(); resp != nil {
-				for _, mediaType := range resp.Content.AdditionalProperties {
-					// TODO: if mediaTypeName is empty, don't add an extra "_"
-					// TODO: try to lookup response "name" from status code (e.g. 200 => OK)
-					r := Response{
-						StatusCode:  response.Name,
-						ContentType: mediaType.Name,
-					}
-
-					schemaOrRef := mediaType.Value.Schema
-					// schema reference
-					if schemaOrRef != nil {
-						if ref := schemaOrRef.GetReference(); ref != nil {
-							schemaModel, err := o.resolveSchemaReference(ref)
-							if err != nil {
-								return nil, err
-							}
-							r.Body = schemaModel
-						} else {
-							schemaModel, err := o.resolveSchema(schemaOrRef.GetSchema(), "")
-							if err != nil {
-								return nil, err
-							}
-							r.Body = schemaModel
+				if resp.Content == nil {
+					operation.Responses = append(operation.Responses, Response{
+						StatusCode: response.Name,
+					})
+				} else {
+					for _, mediaType := range resp.Content.AdditionalProperties {
+						r := Response{
+							StatusCode:  response.Name,
+							ContentType: mediaType.Name,
 						}
-					}
+						// TODO: if mediaTypeName is empty, don't add an extra "_"
+						// TODO: try to lookup response "name" from status code (e.g. 200 => OK)
 
-					operation.Responses = append(operation.Responses, r)
+						schemaOrRef := mediaType.Value.Schema
+						// schema reference
+						if schemaOrRef != nil {
+							if ref := schemaOrRef.GetReference(); ref != nil {
+								schemaModel, err := o.resolveSchemaReference(ref)
+								if err != nil {
+									return nil, err
+								}
+								r.Body = schemaModel
+							} else {
+								schemaModel, err := o.resolveSchema(schemaOrRef.GetSchema(), "")
+								if err != nil {
+									return nil, err
+								}
+								r.Body = schemaModel
+							}
+						}
+						operation.Responses = append(operation.Responses, r)
+					}
 				}
 			}
 		}

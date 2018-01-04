@@ -1,19 +1,13 @@
 package generator
 
-type Operation struct {
+type GenOperation struct {
 	Name     string
-	Handlers []Handler
-	Models   []Model
+	Handlers []GenHandler
+	Models   []*GenSchema
 }
 
-type Handler struct {
+type GenHandler struct {
 	Name   string
 	Params string
-	Body   string
-}
-
-type Model struct {
-	Name       string
-	Type       string
-	Properties map[string]string
+	Body   *GenSchema
 }
