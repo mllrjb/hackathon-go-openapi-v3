@@ -1,0 +1,40 @@
+//this file is auto generated
+
+package generated
+
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
+
+{{range $}}
+    {{range .Handlers}}
+        var I{{.Name}} {{.Name}}
+    {{end}}
+{{end}}
+
+func CreateAPIRouter() *mux.Router {
+	router := mux.NewRouter()
+	router.KeepContext = true
+
+{{range $}}
+	router.HandleFunc("{{.Path}}", func(res http.ResponseWriter, req *http.Request) {
+        // need to decide which handler to call here
+
+		response := IUpdateCaseHandler_VndLogrhythmCaseV1.Handle(params, Body)
+
+		res.Write(response.WriteResponse())
+
+	}).Methods("{{.Method}}")
+{{end}}
+
+
+	//catch-all 404 handler
+	router.HandleFunc("/{restOfRoute:.*}", func(res http.ResponseWriter, req *http.Request) {
+		res.Write([]byte("404"))
+	})
+
+	return router
+
+}

@@ -17,7 +17,9 @@ func MediaTypeToTitle(mediaType string) string {
 
 func GenerateOperation(op *parser.Operation) GenOperation {
 	gOp := GenOperation{
-		Name: op.Name,
+		Name:   op.Name,
+		Path:   op.Path,
+		Method: op.Method,
 	}
 	paramsName := fmt.Sprintf("%sParameters", op.Name)
 	handlerBase := fmt.Sprintf("%sHandler", op.Name)

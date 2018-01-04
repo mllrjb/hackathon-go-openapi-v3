@@ -1,8 +1,6 @@
+//this file is auto generated
+
 package generated
-
-import "net/http"
-
-var _ = http.MethodGet
 
 {{range .Handlers -}}
 type {{.Name}} interface {
@@ -23,6 +21,8 @@ type {{.Name}} interface {
 
 {{end -}}
 
+type {{(index .Handlers 0).Params}} struct{}
+
 {{range .Models -}}
   {{- if not .IsDefinedElsewhere -}}
     {{- if .IsPrimitive -}}
@@ -35,4 +35,42 @@ type {{.ReceiverName}} {{template "schema.tmpl" .Items}}
       {{- end}}
     {{- end}}
   {{- end}}
+{{- end}}
+
+{{range .Handlers -}}
+type Impl{{.Name}} struct{}
+
+  {{if .Body -}}
+    {{if .Body.IsSlice -}}
+      {{if .Body.IsDefinedElsewhere -}}
+func (o Impl{{.Name}}) Handle(params {{.Params}}, body {{.Body.GoType}}) Responder {
+    // Implement the handler here
+    return Impl{{.Name}}Response{}
+}
+      {{- else -}}
+func (o Impl{{.Name}}) Handle(params {{.Params}}, body []{{.Body.Items.GoType}}) Responder {
+    // Implement the handler here
+    return Impl{{.Name}}Response{}
+}
+      {{- end -}}
+    {{- else -}}
+func (o Impl{{.Name}}) Handle(params {{.Params}}, body {{.Body.GoType}}) Responder {
+    // Implement the handler here
+    return Impl{{.Name}}Response{}
+}
+    {{- end -}}
+  {{- else -}}
+func (o Impl{{.Name}}) Handle(params {{.Params}}) Responder {
+    // Implement the handler here
+    return Impl{{.Name}}Response{}
+}
+  {{- end}}
+
+type Impl{{.Name}}Response struct {}
+
+func (o Impl{{.Name}}Response) WriteResponse() []byte {
+    // Implement
+    return []byte("Hello World!")
+}
+
 {{end}}
