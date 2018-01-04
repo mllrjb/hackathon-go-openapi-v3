@@ -52,12 +52,14 @@ paths:
               items:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - name
-                  properties:
-                    name:
-                      type: string
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                    properties:
+                      name:
+                        type: string
           'application/vnd.InlineNestedRef+json':
             schema:
               type: array
@@ -72,17 +74,20 @@ paths:
                 type: array
                 items:
                   type: string
-          'application/vnd.InlineNested+json':
+          'application/vnd.InlineNestedObject+json':
             schema:
               type: object
               properties:
                 nested:
                   type: object
-                  required:
-                    - name
                   properties:
-                    name:
-                      type: string
+                    nested:
+                      type: object
+                      required:
+                        - name
+                      properties:
+                        name:
+                          type: string
       responses:
         '200':
           description: ok
