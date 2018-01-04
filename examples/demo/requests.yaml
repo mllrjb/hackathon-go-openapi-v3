@@ -113,6 +113,11 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Item'
+    ItemWithRef:
+      type: object
+      properties:
+        nested:
+          $ref: '#/components/schemas/Item'
     NestedArray:
       type: array
       items:

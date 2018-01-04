@@ -7,33 +7,33 @@ servers:
   - url: https://localhost:8501/lr-case-api
     description: Local API Gateway (https)
 paths:
-  # '/cases':
-  #   get:
-  #     operationId: listCases
-  #     summary: List Cases
-  #     description: Retrieve a filtered list of cases. Supports pagination.
-  #     parameters:
-  #       - name: offset
-  #         in: query
-  #         description: Where to start paging
-  #         required: false
-  #         schema:
-  #           type: integer
-  #           format: int32
-  #     responses:
-  #       '200':
-  #         description: The returned case.
-  #         content:
-  #           'application/vnd.logrhythm.case.list.v1+json':
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/CaseV1'
-  #           'application/vnd.logrhythm.case.list.v2+json':
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/CaseV2'
+  '/cases':
+    get:
+      operationId: listCases
+      summary: List Cases
+      description: Retrieve a filtered list of cases. Supports pagination.
+      parameters:
+        - name: offset
+          in: query
+          description: Where to start paging
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The returned case.
+          content:
+            'application/vnd.logrhythm.case.list.v1+json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseV1'
+            'application/vnd.logrhythm.case.list.v2+json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseV2'
   '/cases/{id}':
     put:
       parameters:

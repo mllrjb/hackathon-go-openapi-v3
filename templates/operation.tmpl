@@ -9,7 +9,7 @@ type {{.Name}} interface {
       {{if .Body.IsDefinedElsewhere -}}
   Handle(params {{.Params}}, body {{.Body.GoType}}) Responder
       {{- else -}}
-  Handle(params {{.Params}}, body []{{.Body.Items.GoType}}) Responder
+  Handle(params {{.Params}}, body {{.Body.GoType}}) Responder
       {{- end -}}
     {{- else -}}
   Handle(params {{.Params}}, body {{.Body.GoType}}) Responder

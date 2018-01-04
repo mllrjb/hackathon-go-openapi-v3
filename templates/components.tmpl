@@ -1,0 +1,7 @@
+{{- if .IsPrimitive -}}
+type {{template "schema.tmpl" .}}
+{{- else if .IsObject -}}
+type {{template "schema.tmpl" . -}}
+{{- else if .IsSlice -}}
+type {{.ReceiverName}} {{.GoType}}
+{{- end}}

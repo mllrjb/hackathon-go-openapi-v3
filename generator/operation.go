@@ -44,7 +44,13 @@ func GenerateOperation(op *parser.Operation) GenOperation {
 
 				gs := GenerateSchema(r.Body, handlerBodyName)
 				nested := GetAllNestedModels(&gs)
-				// gOp.Models = append(gOp.Models, &gs)
+
+				// ignore top level slices, since we just use their type directly
+				// (should never have a top level primitive for a request either)
+				if gs.IsObject {
+					gOp.Models = append(gOp.Models, &gs)
+				}
+
 				gOp.Models = append(gOp.Models, nested...)
 
 				gOp.Handlers = append(gOp.Handlers, GenHandler{
@@ -57,22 +63,6 @@ func GenerateOperation(op *parser.Operation) GenOperation {
 	}
 
 	return gOp
-}
-
-func GetAllNestedModels(gs *GenSchema) []*GenSchema {
-	if gs.IsDefinedElsewhere || gs.IsPrimitive {
-		return []*GenSchema{}
-	}
-
-	if gs.IsObject {
-		return []*GenSchema{gs}
-	}
-
-	if gs.IsSlice {
-		return GetAllNestedModels(gs.Items)
-	}
-
-	return []*GenSchema{}
 }
 
 // operation:

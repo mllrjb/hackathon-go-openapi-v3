@@ -3,7 +3,11 @@
 {{- else if .IsObject -}}
 {{.GoType}} struct {
   {{- range .Properties}}
+  {{if .IsDefinedElsewhere -}}
+  {{.ReceiverName}} {{.GoType}}
+  {{- else -}}
   {{template "schema.tmpl" .}}
+  {{- end -}}
   {{- end -}}
 }
 {{- else if .IsSlice -}}

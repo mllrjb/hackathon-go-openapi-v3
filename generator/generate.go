@@ -55,21 +55,38 @@ func GenerateFiles(walker parser.Walker) {
 		os.Exit(1)
 	}
 
-	operations := walker.GetOperations()
+	genOps := []*GenOperation{}
+	for _, op := range walker.GetOperations() {
+		genOp := GenerateOperation(op)
+		genOps = append(genOps, &genOp)
+	}
 
-	ctmpl := t.Lookup("operation.tmpl")
-	if ctmpl == nil {
+	genSchemas := []*GenSchema{}
+	for _, schema := range walker.GetModels() {
+		gs := GenerateSchemaComponents(schema)
+
+		genSchemas = append(genSchemas, &gs)
+
+		nested := GetAllNestedModels(&gs)
+		genSchemas = append(genSchemas, nested...)
+	}
+
+	generateOperations(t, genOps)
+	generateComponents(t, genSchemas)
+	generatePaths(t, genOps)
+
+}
+
+func generateOperations(tmpl *template.Template, genOps []*GenOperation) {
+	otmpl := tmpl.Lookup("operation.tmpl")
+	if otmpl == nil {
 		fmt.Println("could not find operation template")
 		os.Exit(1)
 	}
-	genOps := []GenOperation{}
-	for _, op := range operations {
+
+	for _, genOp := range genOps {
 		var buf bytes.Buffer
-
-		genOp := GenerateOperation(op)
-		genOps = append(genOps, genOp)
-
-		err = ctmpl.Execute(&buf, genOp)
+		err := otmpl.Execute(&buf, genOp)
 		if err != nil {
 			fmt.Printf("error processing operation: %v\n", err)
 			os.Exit(1)
@@ -82,7 +99,7 @@ func GenerateFiles(walker parser.Walker) {
 		// 	os.Exit(1)
 		// }
 
-		opPath := fmt.Sprintf("%s/%s.go", outputDir, op.Name)
+		opPath := fmt.Sprintf("%s/%s.go", outputDir, genOp.Name)
 		opFile, err := os.Create(opPath)
 		if err != nil {
 			fmt.Printf("unable to create %s: %v", opPath, err)
@@ -95,17 +112,51 @@ func GenerateFiles(walker parser.Walker) {
 			os.Exit(1)
 		}
 
-		fmt.Printf("wrote file to %v for op %v\n", opPath, op.Name)
+		fmt.Printf("wrote file to %v for op %v\n", genOp, genOp.Name)
+	}
+}
+
+func generateComponents(tmpl *template.Template, genSchemas []*GenSchema) {
+	componentsPath := "output/components.go"
+	componentsFile, err := os.Create(componentsPath)
+	if err != nil {
+		fmt.Printf("unable to create %s: %v", componentsPath, err)
+		os.Exit(1)
+	}
+	ctmpl := tmpl.Lookup("components.tmpl")
+	if ctmpl == nil {
+		fmt.Println("could not find components template")
+		os.Exit(1)
 	}
 
-	ctmpl = t.Lookup("pathRouting.tmpl")
-	if ctmpl == nil {
+	for _, model := range genSchemas {
+		var buf bytes.Buffer
+		err = ctmpl.Execute(&buf, model)
+		if err != nil {
+			fmt.Printf("error processing component: %v\n", err)
+			os.Exit(1)
+		}
+
+		formattedBytes := buf.Bytes()
+		// formattedBytes, err := format.Source(buf.Bytes())
+		// if err != nil {
+		// 	fmt.Println("error formatting operation: %v\n", err)
+		// 	os.Exit(1)
+		// }
+
+		componentsFile.Write(formattedBytes)
+	}
+}
+
+func generatePaths(tmpl *template.Template, genOps []*GenOperation) {
+	ptmpl := tmpl.Lookup("pathRouting.tmpl")
+	if ptmpl == nil {
 		fmt.Println("could not find operation template")
 		os.Exit(1)
 	}
 
 	var buf bytes.Buffer
-	err = ctmpl.Execute(&buf, genOps)
+	err := ptmpl.Execute(&buf, genOps)
 	if err != nil {
 		fmt.Printf("error processing operation: %v\n", err)
 		os.Exit(1)

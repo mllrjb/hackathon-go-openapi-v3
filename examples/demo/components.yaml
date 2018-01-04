@@ -1,0 +1,52 @@
+openapi: '3.0.0'
+info:
+  title: Component Showcase
+  version: '1.0.0'
+  description: Demonstrates various types of components
+paths:
+  '/items':
+    get:
+      operationId: getItem
+      responses:
+        '200':
+          description: ok
+components:
+  schemas:
+    Item:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    NestedItems:
+      type: array
+      items:
+        type: object
+        required:
+          - name
+        properties:
+          name:
+            type: string
+    ItemsRef:
+      type: array
+      items:
+        $ref: '#/components/schemas/Item'
+    ItemWithRef:
+      type: object
+      properties:
+        nested:
+          $ref: '#/components/schemas/Item'
+    Primitive:
+      type: string
+    NestedArray:
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
