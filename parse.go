@@ -12,7 +12,7 @@ import (
 	"github.com/googleapis/gnostic/compiler"
 )
 
-const filepath = "examples/CaseAPI/caseapi.yaml"
+const filepath = "examples/demo/requests.yaml"
 
 func main() {
 	bytes, err := compiler.ReadBytesForFile(filepath)

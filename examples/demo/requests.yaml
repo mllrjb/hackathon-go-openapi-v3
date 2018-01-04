@@ -1,0 +1,70 @@
+openapi: '3.0.0'
+info:
+  title: Request Showcase
+  version: '1.0.0'
+  description: Demonstrates various types of request bodies
+paths:
+  '/items':
+    get:
+      operationId: getItem
+      responses:
+        '200':
+          description: ok
+  '/items':
+    post:
+      operationId: createItems
+      requestBody:
+        content:
+          'application/vnd.Item+json':
+            schema:
+              $ref: '#/components/schemas/Item'
+          'application/vnd.InlineItem+json':
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+          'application/vnd.Items+json':
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Item'
+          'application/vnd.InlineItems+json':
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+          'application/vnd.ItemsRef+json':
+            schema:
+              $ref: '#/components/schemas/ItemsRef'
+          'application/vnd.NestedItems+json':
+            schema:
+              $ref: '#/components/schemas/NestedItems'
+      responses:
+        '200':
+          description: ok
+components:
+  schemas:
+    Item:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    NestedItems:
+      type: array
+      items:
+        type: object
+        required:
+          - name
+        properties:
+          name:
+            type: string
+    ItemsRef:
+      type: array
+      items:
+        $ref: '#/components/schemas/Item'
