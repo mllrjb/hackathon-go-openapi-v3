@@ -36,7 +36,7 @@ func main() {
 
 	err = w.Traverse()
 	if err != nil {
-		fmt.Printf("unable to traverse models %s\n", filepath, err)
+		fmt.Printf("unable to traverse models %s %s\n", filepath, err)
 		os.Exit(1)
 	}
 
