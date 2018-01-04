@@ -20,18 +20,19 @@ type {{.Name}} interface {
   Handle(params {{.Params}}) Responder
   {{- end}}
 }
-{{end}}
+
+{{end -}}
 
 {{range .Models -}}
   {{- if not .IsDefinedElsewhere -}}
     {{- if .IsPrimitive -}}
 type {{template "schema.tmpl" .}}
     {{- else if .IsObject -}}
-{{template "schema.tmpl" .}}
+type {{template "schema.tmpl" . -}}
     {{- else if .IsSlice -}}
       {{if not .Items.IsDefinedElsewhere -}}
-{{template "schema.tmpl" .Items}}
+type {{.ReceiverName}} {{template "schema.tmpl" .Items}}
       {{- end}}
     {{- end}}
   {{- end}}
-{{- end}}
+{{end}}

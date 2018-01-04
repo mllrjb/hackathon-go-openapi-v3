@@ -43,6 +43,46 @@ paths:
           'application/vnd.NestedItems+json':
             schema:
               $ref: '#/components/schemas/NestedItems'
+          'application/vnd.NestedArray+json':
+            schema:
+              $ref: '#/components/schemas/NestedArray'
+          'application/vnd.InlineNestedArray+json':
+            schema:
+              type: array
+              items:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
+          'application/vnd.InlineNestedRef+json':
+            schema:
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+          'application/vnd.InlineNestedArrayPrimitive+json':
+            schema:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+          'application/vnd.InlineNested+json':
+            schema:
+              type: object
+              properties:
+                nested:
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
       responses:
         '200':
           description: ok
@@ -68,3 +108,14 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Item'
+    NestedArray:
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string

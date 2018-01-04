@@ -2,6 +2,7 @@ package generator
 
 import "github.schq.secious.com/jason-miller/go-openapi-v3/parser"
 import "fmt"
+import "github.schq.secious.com/jason-miller/go-openapi-v3/utils"
 
 type GenSchema struct {
 	ReceiverName       string
@@ -80,18 +81,18 @@ func GenerateSchema(m parser.SchemaModel, receiverName string) GenSchema {
 				ReceiverName:       receiverName,
 				IsDefinedElsewhere: false,
 				IsSlice:            true,
-				GoType:             "slice",
+				GoType:             fmt.Sprintf("[]%s", gsi.GoType),
 				Items:              &gsi,
 			}
 		} else {
-			gsi := GenerateSchema(p.Items, receiverName)
-
-			// generate "type {name}Slice []{name}"
+			itemReceiverName := fmt.Sprintf("%s%s", receiverName, utils.ToPascalCase(p.Items.GetType()))
+			gsi := GenerateSchema(p.Items, itemReceiverName)
+			// generate "type {name}Slice []{name}{item.type}"
 			gs := GenSchema{
-				ReceiverName:       fmt.Sprintf("%sSlice", receiverName),
+				ReceiverName:       receiverName,
 				IsDefinedElsewhere: false,
 				IsSlice:            true,
-				GoType:             "slice",
+				GoType:             fmt.Sprintf("[]%s", gsi.GoType),
 				Items:              &gsi,
 			}
 

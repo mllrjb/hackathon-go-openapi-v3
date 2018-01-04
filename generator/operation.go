@@ -41,7 +41,9 @@ func GenerateOperation(op *parser.Operation) GenOperation {
 				handlerBodyName = fmt.Sprintf("%s%s", op.Name, mediaTypeTitle)
 
 				gs := GenerateSchema(r.Body, handlerBodyName)
-				gOp.Models = append(gOp.Models, gs)
+				nested := GetAllNestedModels(&gs)
+				// gOp.Models = append(gOp.Models, &gs)
+				gOp.Models = append(gOp.Models, nested...)
 
 				gOp.Handlers = append(gOp.Handlers, GenHandler{
 					Name:   handlerName,
@@ -53,6 +55,22 @@ func GenerateOperation(op *parser.Operation) GenOperation {
 	}
 
 	return gOp
+}
+
+func GetAllNestedModels(gs *GenSchema) []*GenSchema {
+	if gs.IsDefinedElsewhere || gs.IsPrimitive {
+		return []*GenSchema{}
+	}
+
+	if gs.IsObject {
+		return []*GenSchema{gs}
+	}
+
+	if gs.IsSlice {
+		return GetAllNestedModels(gs.Items)
+	}
+
+	return []*GenSchema{}
 }
 
 // operation:

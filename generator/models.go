@@ -3,7 +3,7 @@ package generator
 type GenOperation struct {
 	Name     string
 	Handlers []GenHandler
-	Models   []GenSchema
+	Models   []*GenSchema
 }
 
 type GenHandler struct {
