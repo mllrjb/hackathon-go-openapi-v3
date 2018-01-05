@@ -7,4 +7,5 @@ Generates a RESTful API based on an OpenAPI 3.0.0 specification.
 ```
 go get github.com/googleapis/gnostic
 go run parse.go
+go run main.go
 ```
