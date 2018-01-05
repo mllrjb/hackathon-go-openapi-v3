@@ -3,7 +3,6 @@
 package generated
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,7 +11,7 @@ import (
 
 {{range $}}
     {{range .Handlers}}
-var I{{.Name}} operation.{{.Name}}
+var {{.Name}} operation.{{.Name}}
     {{end}}
 {{end}}
 
@@ -32,7 +31,7 @@ func CreateAPIRouter() *mux.Router {
 		{{range $}}
 		{{range .Handlers}}
 		if IsHandlerForContentType("{{.Name}}",MediaTypeToTitle(contentType[0])) {
-			if I{{.Name}} == nil {
+			if {{.Name}} == nil {
 				//function has not been wired in
 				res.WriteHeader(http.StatusNotImplemented)
 				return
@@ -44,14 +43,14 @@ func CreateAPIRouter() *mux.Router {
 
 		{{if .Body -}}
 			var body {{ref .Body "generated"}}
-			response := I{{.Name}}.Handle(params, body)
+			response := {{.Name}}.Handle(params, body)
 		{{- else -}}
-			response := I{{.Name}}.Handle(params)
+			response := {{.Name}}.Handle(params)
 		{{end}}
-			res.Write(response.WriteResponse())
+			response.WriteResponse(res)
 		}
 		{{end}}
-		
+
 		//should this default since the path is valid?
 
 		{{end}}
@@ -71,8 +70,6 @@ func CreateAPIRouter() *mux.Router {
 }
 
 func IsHandlerForContentType(handlerName string, contentType string) bool {
-	fmt.Println(HandlerToMediaTypeTitle(handlerName))
-	fmt.Println(MediaTypeToTitle(contentType))
 	return strings.EqualFold(
 		HandlerToMediaTypeTitle(handlerName), MediaTypeToTitle(contentType))
 }

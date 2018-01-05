@@ -3,14 +3,27 @@
 package operation
 
 {{range .Handlers -}}
-type {{.Name}} interface {
   {{if .Body -}}
+type {{.Name}} interface {
   Handle(params {{.Params}}, body {{ref .Body "operation"}}) Responder
-  {{- else -}}
-  Handle(params {{.Params}}) Responder
-  {{- end}}
 }
 
+type {{.Name}}Func func(params {{.Params}}, body {{ref .Body "operation"}}) Responder
+
+func (fn {{.Name}}Func) Handle(params {{.Params}}, body {{ref .Body "operation"}}) Responder {
+	return fn(params, body)
+}
+  {{- else -}}
+type {{.Name}} interface {
+  Handle(params {{.Params}}) Responder
+}
+
+type {{.Name}}Func func(params {{.Params}}) Responder
+
+func (fn {{.Name}}Func) Handle(params {{.Params}}) Responder {
+	return fn(params)
+}
+  {{- end}}
 {{end -}}
 
 type {{(index .Handlers 0).Params}} struct{}

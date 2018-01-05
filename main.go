@@ -4,12 +4,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.schq.secious.com/jason-miller/go-openapi-v3/generated/component"
+	"github.schq.secious.com/jason-miller/go-openapi-v3/generated/operation"
+
 	"github.schq.secious.com/jason-miller/go-openapi-v3/generated"
 )
 
 func main() {
-	// generated.IUpdateCaseHandler_VndLogrhythmCaseV1 = generated.ImplUpdateCaseHandler_VndLogrhythmCaseV1{}
-
+	generated.CreateItemsHandler_VndItem = operation.CreateItemsHandler_VndItemFunc(func(params operation.CreateItemsParameters, body component.Item) operation.Responder {
+		return operation.StatusCodeResponder(204)
+	})
+	generated.CreateItemsHandler_VndItems = operation.CreateItemsHandler_VndItemsFunc(func(params operation.CreateItemsParameters, body []component.Item) operation.Responder {
+		return operation.JsonResponder(201, "application/vnd.foo.bar+json", "whatever")
+	})
 	address := "127.0.0.1:9535"
 	server := generated.NewServer("127.0.0.1:9535")
 
