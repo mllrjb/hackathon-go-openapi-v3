@@ -1,0 +1,54 @@
+openapi: '3.0.0'
+info:
+  title: Polymorphism Showcase
+  version: '1.0.0'
+  description: Demonstrates polymorphic components
+paths:
+  '/items':
+    get:
+      operationId: getItem
+      responses:
+        '200':
+          description: ok
+components:
+  schemas:
+    PolymorphicItem:
+      type: object
+      anyOf:
+        - $ref: '#/components/schemas/SizeItem'
+        - $ref: '#/components/schemas/ColorItem'
+        - $ref: '#/components/schemas/NamedItem'
+      # TODO: mappings
+      discriminator:
+        propertyName: item_type
+    BaseItem:
+      type: object
+      required:
+        - item_type
+      properties:
+        item_type:
+          type: string
+    SizeItem:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseItem'
+        - type: object
+          properties:
+            size:
+              type: integer
+    ColorItem:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseItem'
+        - type: object
+          properties:
+            color:
+              type: string
+    NamedItem:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseItem'
+        - type: object
+          properties:
+            name:
+              type: string

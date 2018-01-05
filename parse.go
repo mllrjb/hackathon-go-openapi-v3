@@ -14,9 +14,11 @@ import (
 
 // const filepath = "examples/demo/components.yaml"
 
-const filepath = "examples/CaseAPI/cases.yaml"
+// const filepath = "examples/CaseAPI/cases.yaml"
 
-// const filepath = "examples/demo/requests.yaml"
+// const filepath = "examples/demo/polymorphism.yaml"
+
+const filepath = "examples/demo/requests.yaml"
 
 func main() {
 	bytes, err := compiler.ReadBytesForFile(filepath)

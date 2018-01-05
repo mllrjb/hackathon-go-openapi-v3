@@ -42,7 +42,7 @@ func GenerateOperation(op *parser.Operation) GenOperation {
 			} else {
 				handlerBodyName = fmt.Sprintf("%s%s", op.Name, mediaTypeTitle)
 
-				gs := GenerateSchema(r.Body, handlerBodyName)
+				gs := GenerateSchema(r.Body, handlerBodyName, "operation")
 				nested := GetAllNestedModels(&gs)
 
 				// ignore top level slices, since we just use their type directly

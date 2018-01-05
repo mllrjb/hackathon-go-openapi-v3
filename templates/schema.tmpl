@@ -1,15 +1,15 @@
 {{if .IsPrimitive -}}
-{{.ReceiverName}} {{.GoType}}
+{{.GoType}}
 {{- else if .IsObject -}}
-{{.GoType}} struct {
+struct {
   {{- range .Properties}}
   {{if .IsDefinedElsewhere -}}
-  {{.ReceiverName}} {{.GoType}}
+  {{.ReceiverName}} {{.ReferenceType}}
   {{- else -}}
-  {{template "schema.tmpl" .}}
+  {{.ReceiverName}} {{template "schema.tmpl" .}}
   {{- end -}}
   {{- end -}}
 }
 {{- else if .IsSlice -}}
-{{.GoType}}
+[]{{ref .Items .Pkg}}
 {{- end}}

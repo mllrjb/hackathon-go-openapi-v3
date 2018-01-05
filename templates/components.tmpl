@@ -1,7 +1,9 @@
-{{- if .IsPrimitive -}}
-type {{template "schema.tmpl" .}}
+package component
+
+{{if .IsPrimitive -}}
+type {{.ReceiverName}} {{template "schema.tmpl" .}}
 {{- else if .IsObject -}}
-type {{template "schema.tmpl" . -}}
+type {{.ReceiverName}} {{template "schema.tmpl" . -}}
 {{- else if .IsSlice -}}
-type {{.ReceiverName}} {{.GoType}}
+type {{.ReceiverName}} {{template "schema.tmpl" . -}}
 {{- end}}

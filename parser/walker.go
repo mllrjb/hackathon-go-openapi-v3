@@ -20,28 +20,40 @@ import (
 
 type Walker struct {
 	document   *openapi_v3.Document
-	models     map[string]SchemaModel
+	models     []SchemaModel
 	operations []*Operation
 }
 
 func NewWalker(document *openapi_v3.Document) Walker {
 	return Walker{
 		document:   document,
-		models:     make(map[string]SchemaModel),
+		models:     []SchemaModel{},
 		operations: []*Operation{},
 	}
 }
 
 func (o *Walker) GetModels() []SchemaModel {
-	modelList := make([]SchemaModel, len(o.models))
+	return o.models
+}
 
-	idx := 0
-	for _, v := range o.models {
-		modelList[idx] = v
-		idx++
+func (o *Walker) AddModel(schemaModel SchemaModel) {
+	existing := o.FindModel(schemaModel.GetComponentName())
+	if existing == nil {
+		o.models = append(o.models, schemaModel)
 	}
+}
 
-	return modelList
+func (o *Walker) FindModel(refOrName string) SchemaModel {
+	for _, m := range o.models {
+		if m.GetComponentName() == refOrName || componentSchemaPath(m.GetComponentName()) == refOrName {
+			return m
+		}
+	}
+	return nil
+}
+
+func componentSchemaPath(name string) string {
+	return fmt.Sprintf("#/components/schemas/%s", name)
 }
 
 func (o *Walker) GetOperations() []*Operation {
@@ -55,8 +67,7 @@ func (o *Walker) Traverse() error {
 		if err != nil {
 			return err
 		}
-		refPath := fmt.Sprintf("#/components/schemas/%s", schema.Name)
-		o.models[refPath] = schemaModel
+		o.AddModel(schemaModel)
 	}
 
 	for _, path := range o.document.Paths.Path {
@@ -292,6 +303,20 @@ func (o *Walker) resolveSchema(schema *openapi_v3.Schema, componentName string) 
 			}
 		}
 
+		if schema.AnyOf != nil {
+			schemaModel.DiscriminatorType = "anyOf"
+			err := o.discriminatedSchema(&schemaModel.DiscriminatedSchemaModel, schema, schema.AnyOf)
+			if err != nil {
+				return nil, err
+			}
+		} else if schema.OneOf != nil {
+			schemaModel.DiscriminatorType = "oneOf"
+			err := o.discriminatedSchema(&schemaModel.DiscriminatedSchemaModel, schema, schema.OneOf)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		return &schemaModel, nil
 	}
 
@@ -327,9 +352,75 @@ func (o *Walker) resolveSchema(schema *openapi_v3.Schema, componentName string) 
 		MaxLength: schema.MaxLength,
 	}
 
-	// TODO: support for oneOf has polymorphic implications
-	// TODO: support for anyOf is like oneOf, but potentially w/o a discriminator, first match
+	// TODO: not valid with other attributes (like properties, type)
+	// e.g. you can't express that something is a type: number AND must be oneOf: string, bool
+	// (technically, allOf can produce similarly invalid results, which is why we only validate it for object)
+	// 'Discriminated' should probably be its own type (that generates an interface, not an object)
+	// Question: does this "jive" w/ the shorthand for a discriminated subtype? idk how we would implement that anyways... seems crazy
+	if schema.AnyOf != nil {
+		schemaModel.DiscriminatorType = "anyOf"
+		err := o.discriminatedSchema(&schemaModel.DiscriminatedSchemaModel, schema, schema.AnyOf)
+		if err != nil {
+			return nil, err
+		}
+	} else if schema.OneOf != nil {
+		schemaModel.DiscriminatorType = "oneOf"
+		err := o.discriminatedSchema(&schemaModel.DiscriminatedSchemaModel, schema, schema.OneOf)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &schemaModel, nil
+}
+
+func (o *Walker) discriminatedSchema(schemaModel *DiscriminatedSchemaModel, schema *openapi_v3.Schema, dSchemas []*openapi_v3.SchemaOrReference) error {
+	if schema.Discriminator != nil {
+		// TODO: mapping of types
+		d := Discriminator{
+			PropertyName: schema.Discriminator.PropertyName,
+			Mapping:      make(map[string]SchemaModel),
+		}
+
+		if schema.Discriminator.Mapping != nil {
+			for _, mapping := range schema.Discriminator.Mapping.AdditionalProperties {
+				ref := openapi_v3.Reference{
+					XRef: mapping.Value,
+				}
+				mapModel, err := o.resolveSchemaReference(&ref)
+				if err != nil {
+					return err
+				}
+
+				d.Mapping[mapping.Name] = mapModel
+			}
+		}
+		schemaModel.Discriminator = &d
+	}
+
+	for _, ds := range dSchemas {
+		dModel, err := o.resolveSchemaOrRef(ds, "")
+		if err != nil {
+			return err
+		}
+
+		schemaModel.DiscriminatorSchemas = append(schemaModel.DiscriminatorSchemas, dModel)
+
+		// TODO: how do inline models work?
+		if dModel.IsComponent() && schemaModel.Discriminator != nil {
+			var existingMapping SchemaModel
+			for _, m := range schemaModel.Discriminator.Mapping {
+				if m == dModel {
+					existingMapping = m
+					break
+				}
+			}
+			if existingMapping == nil {
+				schemaModel.Discriminator.Mapping[dModel.GetComponentName()] = dModel
+			}
+		}
+	}
+	return nil
 }
 
 // TODO: for $ref that points to a simple object, just copy it (don't have a pointer reference)
@@ -346,24 +437,24 @@ func (o *Walker) buildProperties(props *openapi_v3.Properties) (map[string]Schem
 }
 
 func (o *Walker) resolveSchemaReference(ref *openapi_v3.Reference) (SchemaModel, error) {
-	existingModel, ok := o.models[ref.XRef]
-	if ok {
+	existingModel := o.FindModel(ref.XRef)
+	if existingModel != nil {
 		return existingModel, nil
 	}
 
 	for _, schema := range o.document.Components.Schemas.AdditionalProperties {
 		// TODO: sub-refs? (e.g. #/components/schema/MyModel/properties/FooBar)
-		refPath := fmt.Sprintf("#/components/schemas/%s", schema.Name)
+		refPath := componentSchemaPath(schema.Name)
 		if strings.EqualFold(ref.XRef, refPath) {
-			model, err := o.resolveSchemaOrRef(schema.Value, schema.Name)
+			schemaModel, err := o.resolveSchemaOrRef(schema.Value, schema.Name)
 			if err != nil {
 				return nil, err
 			}
 
-			// TODO: is this safe? what if we already wrote it?
-			o.models[ref.XRef] = model
+			// TODO: is this safe? what if we already wrote it? should we re-use a ref?
+			o.AddModel(schemaModel)
 
-			return model, nil
+			return schemaModel, nil
 		}
 	}
 	return nil, fmt.Errorf("could not resolve $ref: '%v'", ref.XRef)

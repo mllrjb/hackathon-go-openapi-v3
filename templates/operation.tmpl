@@ -1,19 +1,11 @@
 //this file is auto generated
 
-package generated
+package operation
 
 {{range .Handlers -}}
 type {{.Name}} interface {
   {{if .Body -}}
-    {{if .Body.IsSlice -}}
-      {{if .Body.IsDefinedElsewhere -}}
-  Handle(params {{.Params}}, body {{.Body.GoType}}) Responder
-      {{- else -}}
-  Handle(params {{.Params}}, body {{.Body.GoType}}) Responder
-      {{- end -}}
-    {{- else -}}
-  Handle(params {{.Params}}, body {{.Body.GoType}}) Responder
-    {{- end -}}
+  Handle(params {{.Params}}, body {{ref .Body "operation"}}) Responder
   {{- else -}}
   Handle(params {{.Params}}) Responder
   {{- end}}
@@ -26,51 +18,13 @@ type {{(index .Handlers 0).Params}} struct{}
 {{range .Models -}}
   {{- if not .IsDefinedElsewhere -}}
     {{- if .IsPrimitive -}}
-type {{template "schema.tmpl" .}}
+type {{.ReceiverName}} {{template "schema.tmpl" .}}
     {{- else if .IsObject -}}
-type {{template "schema.tmpl" . -}}
+type {{.ReceiverName}} {{template "schema.tmpl" . -}}
     {{- else if .IsSlice -}}
       {{if not .Items.IsDefinedElsewhere -}}
-type {{.ReceiverName}} {{template "schema.tmpl" .Items}}
+type {{.ReceiverName}} {{template "schema.tmpl" .}}
       {{- end}}
     {{- end}}
   {{- end}}
 {{- end}}
-
-{{range .Handlers -}}
-type Impl{{.Name}} struct{}
-
-  {{if .Body -}}
-    {{if .Body.IsSlice -}}
-      {{if .Body.IsDefinedElsewhere -}}
-func (o Impl{{.Name}}) Handle(params {{.Params}}, body {{.Body.GoType}}) Responder {
-    // Implement the handler here
-    return Impl{{.Name}}Response{}
-}
-      {{- else -}}
-func (o Impl{{.Name}}) Handle(params {{.Params}}, body []{{.Body.Items.GoType}}) Responder {
-    // Implement the handler here
-    return Impl{{.Name}}Response{}
-}
-      {{- end -}}
-    {{- else -}}
-func (o Impl{{.Name}}) Handle(params {{.Params}}, body {{.Body.GoType}}) Responder {
-    // Implement the handler here
-    return Impl{{.Name}}Response{}
-}
-    {{- end -}}
-  {{- else -}}
-func (o Impl{{.Name}}) Handle(params {{.Params}}) Responder {
-    // Implement the handler here
-    return Impl{{.Name}}Response{}
-}
-  {{- end}}
-
-type Impl{{.Name}}Response struct {}
-
-func (o Impl{{.Name}}Response) WriteResponse() []byte {
-    // Implement
-    return []byte("Hello World!")
-}
-
-{{end}}

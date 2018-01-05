@@ -52,14 +52,12 @@ paths:
               items:
                 type: array
                 items:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                      - name
-                    properties:
-                      name:
-                        type: string
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
           'application/vnd.InlineNestedRef+json':
             schema:
               type: array
@@ -80,14 +78,11 @@ paths:
               properties:
                 nested:
                   type: object
+                  required:
+                    - name
                   properties:
-                    nested:
-                      type: object
-                      required:
-                        - name
-                      properties:
-                        name:
-                          type: string
+                    name:
+                      type: string
       responses:
         '200':
           description: ok
@@ -109,6 +104,23 @@ components:
         properties:
           name:
             type: string
+    DeepNestedItems:
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+    DeepNestedPrimitive:
+      type: array
+      items:
+        type: array
+        items:
+          type: string
     ItemsRef:
       type: array
       items:

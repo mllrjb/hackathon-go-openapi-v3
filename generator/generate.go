@@ -8,13 +8,41 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 
 	"github.schq.secious.com/jason-miller/go-openapi-v3/parser"
 )
 
 const templateDir = "./templates"
-const outputDir = "output"
+const outputDir = "generated"
+const formatSource = false
+
+func ref(gs *GenSchema, currentPackage string) string {
+	if gs.IsDefinedElsewhere {
+		if currentPackage == gs.Pkg {
+			return gs.ReferenceType
+		}
+		return fmt.Sprintf("%s.%s", gs.Pkg, gs.ReferenceType)
+	}
+
+	if gs.IsPrimitive {
+		return gs.GoType
+	}
+
+	if gs.IsSlice {
+		return fmt.Sprintf("[]%s", ref(gs.Items, currentPackage))
+	}
+
+	if gs.IsObject {
+		if currentPackage == gs.Pkg {
+			return gs.ReferenceType
+		}
+		return fmt.Sprintf("%s.%s", gs.Pkg, gs.ReferenceType)
+	}
+
+	return "UNKNOWN_REF_TYPE"
+}
 
 func GenerateFiles(walker parser.Walker) {
 	files, err := ioutil.ReadDir(templateDir)
@@ -46,6 +74,7 @@ func GenerateFiles(walker parser.Walker) {
 
 	funcMap := template.FuncMap{
 		"Title": strings.Title,
+		"ref":   ref,
 	}
 
 	t := template.New("template").Funcs(funcMap)
@@ -77,6 +106,34 @@ func GenerateFiles(walker parser.Walker) {
 
 }
 
+func writeFile(filepath string, bytes []byte) error {
+	if formatSource {
+		formattedBytes, err := format.Source(bytes)
+		if err != nil {
+			fmt.Printf("warning: unable to format output for %s: %v\n", filepath, err)
+		}
+		bytes = formattedBytes
+	}
+
+	filedir := path.Dir(filepath)
+	err := os.MkdirAll(filedir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("unable to create output dir: %v", err)
+	}
+
+	file, err := os.Create(filepath)
+	if err != nil {
+		return fmt.Errorf("unable to create %s: %v", filepath, err)
+	}
+
+	_, err = file.Write(bytes)
+	if err != nil {
+		return fmt.Errorf("unable to write to %s: %v", filepath, err)
+	}
+
+	return nil
+}
+
 func generateOperations(tmpl *template.Template, genOps []*GenOperation) {
 	otmpl := tmpl.Lookup("operation.tmpl")
 	if otmpl == nil {
@@ -92,23 +149,9 @@ func generateOperations(tmpl *template.Template, genOps []*GenOperation) {
 			os.Exit(1)
 		}
 
-		formattedBytes := buf.Bytes()
-		// formattedBytes, err := format.Source(buf.Bytes())
-		// if err != nil {
-		// fmt.Printf("error formatting operation %v: %v\n", op.Name, err)
-		// 	os.Exit(1)
-		// }
-
-		opPath := fmt.Sprintf("%s/%s.go", outputDir, genOp.Name)
-		opFile, err := os.Create(opPath)
+		err = writeFile(fmt.Sprintf("%s/operation/%s.go", outputDir, genOp.Name), buf.Bytes())
 		if err != nil {
-			fmt.Printf("unable to create %s: %v", opPath, err)
-			os.Exit(1)
-		}
-
-		_, err = opFile.Write(formattedBytes)
-		if err != nil {
-			fmt.Printf("unable to write to %s: %v", opPath, err)
+			fmt.Printf("unable to write operation: %v\n", err)
 			os.Exit(1)
 		}
 
@@ -117,12 +160,6 @@ func generateOperations(tmpl *template.Template, genOps []*GenOperation) {
 }
 
 func generateComponents(tmpl *template.Template, genSchemas []*GenSchema) {
-	componentsPath := "output/components.go"
-	componentsFile, err := os.Create(componentsPath)
-	if err != nil {
-		fmt.Printf("unable to create %s: %v", componentsPath, err)
-		os.Exit(1)
-	}
 	ctmpl := tmpl.Lookup("components.tmpl")
 	if ctmpl == nil {
 		fmt.Println("could not find components template")
@@ -131,20 +168,17 @@ func generateComponents(tmpl *template.Template, genSchemas []*GenSchema) {
 
 	for _, model := range genSchemas {
 		var buf bytes.Buffer
-		err = ctmpl.Execute(&buf, model)
+		err := ctmpl.Execute(&buf, model)
 		if err != nil {
 			fmt.Printf("error processing component: %v\n", err)
 			os.Exit(1)
 		}
 
-		formattedBytes := buf.Bytes()
-		// formattedBytes, err := format.Source(buf.Bytes())
-		// if err != nil {
-		// 	fmt.Println("error formatting operation: %v\n", err)
-		// 	os.Exit(1)
-		// }
-
-		componentsFile.Write(formattedBytes)
+		err = writeFile(fmt.Sprintf("%s/component/%s.go", outputDir, model.ReceiverName), buf.Bytes())
+		if err != nil {
+			fmt.Printf("unable to write component: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
 
