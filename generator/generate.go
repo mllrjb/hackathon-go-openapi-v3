@@ -197,7 +197,8 @@ func generatePaths(tmpl *template.Template, genOps []*GenOperation) {
 	}
 
 	// fmt.Println(buf.String())
-	formattedBytes, err := format.Source(buf.Bytes())
+	formattedBytes := buf.Bytes()
+	// formattedBytes, err := format.Source(buf.Bytes())
 	if err != nil {
 		fmt.Printf("error formatting pathRouting: %v\n", err)
 		os.Exit(1)

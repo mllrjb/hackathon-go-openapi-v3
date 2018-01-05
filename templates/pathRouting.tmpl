@@ -3,14 +3,16 @@
 package generated
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
 
 {{range $}}
     {{range .Handlers}}
-        var I{{.Name}} {{.Name}}
+var I{{.Name}} operation.{{.Name}}
     {{end}}
 {{end}}
 
@@ -20,11 +22,40 @@ func CreateAPIRouter() *mux.Router {
 
 {{range $}}
 	router.HandleFunc("{{.Path}}", func(res http.ResponseWriter, req *http.Request) {
-        // need to decide which handler to call here
 
-		response := IUpdateCaseHandler_VndLogrhythmCaseV1.Handle(params, Body)
+		//application/vnd.Item+json
+		contentType := req.Header["Content-Type"]
+		if len(contentType) == 0 {
+			//content type was not passed in - default?
+			return
+		}
+		{{range $}}
+		{{range .Handlers}}
+		if IsHandlerForContentType("{{.Name}}",MediaTypeToTitle(contentType[0])) {
+			if I{{.Name}} == nil {
+				//function has not been wired in
+				res.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+			// TODO: deserialize
+			// TODO: validate
 
-		res.Write(response.WriteResponse())
+			params := operation.{{.Params}}{}
+
+		{{if .Body -}}
+			var body {{ref .Body "generated"}}
+			response := I{{.Name}}.Handle(params, body)
+		{{- else -}}
+			response := I{{.Name}}.Handle(params)
+		{{end}}
+			res.Write(response.WriteResponse())
+		}
+		{{end}}
+		
+		//should this default since the path is valid?
+
+		{{end}}
+
 
 	}).Methods("{{.Method}}")
 {{end}}
@@ -37,4 +68,27 @@ func CreateAPIRouter() *mux.Router {
 
 	return router
 
+}
+
+func IsHandlerForContentType(handlerName string, contentType string) bool {
+	fmt.Println(HandlerToMediaTypeTitle(handlerName))
+	fmt.Println(MediaTypeToTitle(contentType))
+	return strings.EqualFold(
+		HandlerToMediaTypeTitle(handlerName), MediaTypeToTitle(contentType))
+}
+
+func MediaTypeToTitle(mediaType string) string {
+	// TODO: handle */* and non application/json
+	mediaType = strings.TrimPrefix(mediaType, "application/")
+	mediaType = strings.TrimSuffix(mediaType, "json")
+	return utils.ToPascalCase(mediaType)
+}
+
+func HandlerToMediaTypeTitle(handlerName string) string {
+	parts := strings.Split(handlerName, "_")
+
+	if len(parts) != 0 {
+		return parts[len(parts)-1]
+	}
+	return ""
 }

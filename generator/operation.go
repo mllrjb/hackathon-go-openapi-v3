@@ -52,7 +52,9 @@ func GenerateOperation(op *parser.Operation) GenOperation {
 				}
 
 				gOp.Models = append(gOp.Models, nested...)
-
+				for _, m := range gOp.Models {
+					fmt.Printf("model %s.%s (%s)\n", m.Pkg, m.ReferenceType, m.GoType)
+				}
 				gOp.Handlers = append(gOp.Handlers, GenHandler{
 					Name:   handlerName,
 					Params: paramsName,
