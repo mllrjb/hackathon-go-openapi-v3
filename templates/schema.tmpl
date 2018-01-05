@@ -4,9 +4,9 @@
 struct {
   {{- range .Properties}}
   {{if .IsDefinedElsewhere -}}
-  {{.ReceiverName}} {{.ReferenceType}}
+  {{pascal .ReceiverName}} {{.ReferenceType}}
   {{- else -}}
-  {{.ReceiverName}} {{template "schema.tmpl" .}}
+  {{pascal .ReceiverName}} {{template "schema.tmpl" .}}
   {{- end -}}
   {{- end -}}
 }

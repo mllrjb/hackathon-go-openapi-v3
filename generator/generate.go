@@ -11,6 +11,8 @@ import (
 	"path"
 	"strings"
 
+	"github.schq.secious.com/jason-miller/go-openapi-v3/utils"
+
 	"github.schq.secious.com/jason-miller/go-openapi-v3/parser"
 )
 
@@ -73,8 +75,9 @@ func GenerateFiles(walker parser.Walker) {
 	}
 
 	funcMap := template.FuncMap{
-		"Title": strings.Title,
-		"ref":   ref,
+		"Title":  strings.Title,
+		"pascal": utils.ToPascalCase,
+		"ref":    ref,
 	}
 
 	t := template.New("template").Funcs(funcMap)
