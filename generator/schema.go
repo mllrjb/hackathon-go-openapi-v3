@@ -34,16 +34,24 @@ type GenSchema struct {
 }
 
 // TODO: map primitive types?
-func getPrimitiveType(t string) string {
+func getPrimitiveType(t string, format string) string {
+	switch t {
+	case "integer":
+		if len(format) > 0 {
+			return format
+		}
+		return "int64"
+	}
 	return t
 }
 
 func getResolvedType(m parser.SchemaModel, pkg string) resolvedType {
 	if m.IsComponent() {
 		if m.IsPrimitive() {
+			p := m.(*parser.PrimitiveSchemaModel)
 			return resolvedType{
 				Pkg:           "component",
-				GoType:        getPrimitiveType(m.GetType()),
+				GoType:        getPrimitiveType(m.GetType(), p.Format),
 				ReferenceType: m.GetComponentName(),
 			}
 		}
@@ -66,9 +74,10 @@ func getResolvedType(m parser.SchemaModel, pkg string) resolvedType {
 	}
 
 	if m.IsPrimitive() {
+		p := m.(*parser.PrimitiveSchemaModel)
 		return resolvedType{
 			Pkg:           pkg,
-			GoType:        getPrimitiveType(m.GetType()),
+			GoType:        getPrimitiveType(m.GetType(), p.Format),
 			ReferenceType: "",
 		}
 	}
