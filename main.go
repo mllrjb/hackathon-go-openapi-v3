@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/generated/component"
-	"github.schq.secious.com/jason-miller/go-openapi-v3/generated/operation"
+	"github.com/mllrjb/hackathon-go-openapi-v3/generated/component"
+	"github.com/mllrjb/hackathon-go-openapi-v3/generated/operation"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/generated"
+	"github.com/mllrjb/hackathon-go-openapi-v3/generated"
 )
 
 func main() {

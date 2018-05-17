@@ -8,7 +8,7 @@ import (
 
 	"github.com/googleapis/gnostic/OpenAPIv3"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/utils"
+	"github.com/mllrjb/hackathon-go-openapi-v3/utils"
 )
 
 // 1. walk components/schemas

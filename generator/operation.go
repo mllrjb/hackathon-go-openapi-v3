@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/parser"
-	"github.schq.secious.com/jason-miller/go-openapi-v3/utils"
+	"github.com/mllrjb/hackathon-go-openapi-v3/parser"
+	"github.com/mllrjb/hackathon-go-openapi-v3/utils"
 )
 
 func MediaTypeToTitle(mediaType string) string {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/generator"
+	"github.com/mllrjb/hackathon-go-openapi-v3/generator"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/parser"
+	"github.com/mllrjb/hackathon-go-openapi-v3/parser"
 
 	"github.com/googleapis/gnostic/OpenAPIv3"
 	"github.com/googleapis/gnostic/compiler"

@@ -11,9 +11,9 @@ import (
 	"path"
 	"strings"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/utils"
+	"github.com/mllrjb/hackathon-go-openapi-v3/utils"
 
-	"github.schq.secious.com/jason-miller/go-openapi-v3/parser"
+	"github.com/mllrjb/hackathon-go-openapi-v3/parser"
 )
 
 const templateDir = "./templates"
